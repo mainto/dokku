@@ -47,6 +47,7 @@ packer:
 
 copyfiles:
 	cp dokku /usr/local/bin/dokku
+	cp /bin/bash ~/.basher/bash
 	mkdir -p ${CORE_PLUGINS_PATH} ${PLUGINS_PATH}
 	rm -rf ${CORE_PLUGINS_PATH}/*
 	test -d ${CORE_PLUGINS_PATH}/enabled || PLUGIN_PATH=${CORE_PLUGINS_PATH} plugn init
@@ -63,7 +64,6 @@ copyfiles:
 		PLUGIN_PATH=${PLUGINS_PATH} plugn enable $$plugin ;\
 		done
 	chown dokku:dokku -R ${PLUGINS_PATH} ${CORE_PLUGINS_PATH}
-	#$(MAKE) addman
 
 addman:
 	mkdir -p /usr/local/share/man/man1
@@ -104,11 +104,14 @@ sigil:
 	wget -qO /tmp/sigil_latest.tgz ${SIGIL_URL}
 	tar xzf /tmp/sigil_latest.tgz -C /usr/local/bin
 
-docker: #aufs
-	apt-get install -qq -y curl
+docker:
+	apt-get install -qq -y syslog-ng
+	adduser --system --home /var/log/syslog-ng --gecos 'syslog-ng' --group syslog
+	install -d -m0750 -o syslog -g dokku /var/log/syslog-ng
 	egrep -i "^docker" /etc/group || groupadd docker
 	usermod -aG docker dokku
-	apt-get install  -qq -y  lxc aufs-tools cgroup-lite apparmor docker
+	test -s /usr/bin/docker || apt-get install -qq -y lxc aufs-tools apparmor cgroup-lite docker 
+
 #ifndef CI
 #	wget -nv -O - https://get.docker.com/ | sh
 #ifdef DOCKER_VERSION
