@@ -4,7 +4,7 @@ SSHCOMMAND_URL ?= https://raw.githubusercontent.com/dokku/sshcommand/master/sshc
 PLUGN_URL ?= https://github.com/mainto/plugn/releases/download/v0.2.1/plugn_0.2.1_linux_armv7l.tgz
 SIGIL_URL ?= https://github.com/mainto/sigil/releases/download/v0.4.0/sigil_0.4.0_Linux_armv7l.tgz
 STACK_URL ?= https://github.com/mainto/herokuish.git
-PREBUILT_STACK_URL ?= mainto/herokuish
+PREBUILT_STACK_URL ?= mainto/armhf-herokuish:v0.3.8
 DOKKU_LIB_ROOT ?= /var/lib/dokku
 PLUGINS_PATH ?= ${DOKKU_LIB_ROOT}/plugins
 CORE_PLUGINS_PATH ?= ${DOKKU_LIB_ROOT}/core-plugins
@@ -63,7 +63,7 @@ copyfiles:
 		PLUGIN_PATH=${PLUGINS_PATH} plugn enable $$plugin ;\
 		done
 	chown dokku:dokku -R ${PLUGINS_PATH} ${CORE_PLUGINS_PATH}
-	$(MAKE) addman
+	#$(MAKE) addman
 
 addman:
 	mkdir -p /usr/local/share/man/man1
@@ -104,38 +104,40 @@ sigil:
 	wget -qO /tmp/sigil_latest.tgz ${SIGIL_URL}
 	tar xzf /tmp/sigil_latest.tgz -C /usr/local/bin
 
-docker: aufs
+docker: #aufs
 	apt-get install -qq -y curl
 	egrep -i "^docker" /etc/group || groupadd docker
 	usermod -aG docker dokku
-ifndef CI
-	wget -nv -O - https://get.docker.com/ | sh
-ifdef DOCKER_VERSION
-	apt-get install -qq -y docker-engine=${DOCKER_VERSION} || (apt-cache madison docker-engine ; exit 1)
-endif
+	apt-get install  -qq -y  lxc aufs-tools cgroup-lite apparmor docker
+#ifndef CI
+#	wget -nv -O - https://get.docker.com/ | sh
+#ifdef DOCKER_VERSION
+#	apt-get install -qq -y docker-engine=${DOCKER_VERSION} || (apt-cache madison docker-engine ; exit 1)
+#endif
 	sleep 2 # give docker a moment i guess
-endif
+#endif
 
 aufs:
 ifndef CI
-	lsmod | grep aufs || modprobe aufs || apt-get install -qq -y linux-image-extra-`uname -r` > /dev/null
+	lsmod | grep aufs || modprobe aufs || apt-get install -qq -y linux-image-`uname -r` > /dev/null
 endif
 
 stack:
-ifeq ($(shell test -e /var/run/docker.sock && touch -c /var/run/docker.sock && echo $$?),0)
-ifdef BUILD_STACK
-	@echo "Start building herokuish from source"
-	docker images | grep gliderlabs/herokuish || (git clone ${STACK_URL} /tmp/herokuish && cd /tmp/herokuish && IMAGE_NAME=gliderlabs/herokuish BUILD_TAG=latest VERSION=master make -e ${BUILD_STACK_TARGETS} && rm -rf /tmp/herokuish)
-else
-ifeq ($(shell echo ${PREBUILT_STACK_URL} | egrep -q 'http.*://|file://' && echo $$?),0)
-	@echo "Start importing herokuish from ${PREBUILT_STACK_URL}"
-	docker images | grep gliderlabs/herokuish || wget -nv -O - ${PREBUILT_STACK_URL} | gunzip -cd | docker import - gliderlabs/herokuish
-else
-	@echo "Start pulling herokuish from ${PREBUILT_STACK_URL}"
-	docker images | grep gliderlabs/herokuish || docker pull ${PREBUILT_STACK_URL}
-endif
-endif
-endif
+	docker images | grep mainto/armhf-herokuish || docker pull ${PREBUILT_STACK_URL}
+#ifeq ($(shell test -e /var/run/docker.sock && touch -c /var/run/docker.sock && echo $$?),0)
+#ifdef BUILD_STACK
+#	@echo "Start building herokuish from source"
+#	docker images | grep gliderlabs/herokuish || (git clone ${STACK_URL} /tmp/herokuish && cd /tmp/herokuish && IMAGE_NAME=gliderlabs/herokuish BUILD_TAG=latest VERSION=master make -e ${BUILD_STACK_TARGETS} && rm -rf /tmp/herokuish)
+#else
+#ifeq ($(shell echo ${PREBUILT_STACK_URL} | egrep -q 'http.*://|file://' && echo $$?),0)
+#	@echo "Start importing herokuish from ${PREBUILT_STACK_URL}"
+#	docker images | grep gliderlabs/herokuish || wget -nv -O - ${PREBUILT_STACK_URL} | gunzip -cd | docker import - gliderlabs/herokuish
+#else
+#	@echo "Start pulling herokuish from ${PREBUILT_STACK_URL}"
+#	docker images | grep gliderlabs/herokuish || docker pull ${PREBUILT_STACK_URL}
+#endif
+#endif
+#endif
 
 count:
 	@echo "Core lines:"

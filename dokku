@@ -14,7 +14,7 @@ case "$(lsb_release -si)" in
     ;;
 esac
 
-export DOKKU_IMAGE=${DOKKU_IMAGE:="gliderlabs/herokuish"}
+export DOKKU_IMAGE=${DOKKU_IMAGE:="mainto/armhf-herokuish:v0.3.8"}
 export DOKKU_ROOT=${DOKKU_ROOT:=~dokku}
 export DOKKU_LIB_ROOT=${DOKKU_LIB_PATH:="/var/lib/dokku"}
 
