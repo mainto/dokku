@@ -1,6 +1,6 @@
 DOKKU_VERSION = master
 
-SSHCOMMAND_URL ?= https://raw.githubusercontent.com/mainto/sshcommand/master/sshcommand
+SSHCOMMAND_URL ?= https://raw.githubusercontent.com/mainto/sshcommand/armhf/sshcommand
 PLUGN_URL ?= https://github.com/mainto/plugn/releases/download/v0.2.1/plugn_0.2.1_linux_armv7l.tgz
 SIGIL_URL ?= https://github.com/mainto/sigil/releases/download/v0.4.0/sigil_0.4.0_Linux_armv7l.tgz
 STACK_URL ?= https://github.com/mainto/herokuish.git
