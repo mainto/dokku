@@ -11,7 +11,7 @@ Docker powered mini-Heroku. The smallest PaaS implementation you've ever seen. S
 To install the latest stable release, you can run the following commands as a user that has access to `sudo`:
 
     wget https://raw.githubusercontent.com/mainto/dokku/v0.4.14-armhf/bootstrap.sh
-    sudo DOKKU_TAG=v0.4.14-armhf bash bootstrap.sh
+    sudo DOKKU_TAG=v0.4.14-armhf DOKKU_WEB_INSTALLER=true bash bootstrap.sh
 
 ### Upgrading
 

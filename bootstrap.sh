@@ -54,7 +54,9 @@ install-dokku-from-source() {
   git fetch origin
   [[ -n $DOKKU_CHECKOUT ]] && git checkout "$DOKKU_CHECKOUT"
   make install
-  make dokku-installer
+  if [ "$DOKKU_WEB_INSTALLER" = true]; then
+	  make dokku-installer
+  fi
 }
 
 main() {
