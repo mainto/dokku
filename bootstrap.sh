@@ -27,9 +27,6 @@ ensure-environment() {
 install-requirements() {
   echo "--> Ensuring we have the proper dependencies"
   apt-get update -qq > /dev/null
-  if [[ $(lsb_release -sr) == "12.04" ]]; then
-    apt-get -qq -y install python-software-properties
-  fi
 }
 
 install-dokku() {

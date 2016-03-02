@@ -1,6 +1,6 @@
 DOKKU_VERSION = master
 
-SSHCOMMAND_URL ?= https://raw.githubusercontent.com/dokku/sshcommand/master/sshcommand
+SSHCOMMAND_URL ?= https://raw.githubusercontent.com/mainto/sshcommand/master/sshcommand
 PLUGN_URL ?= https://github.com/mainto/plugn/releases/download/v0.2.1/plugn_0.2.1_linux_armv7l.tgz
 SIGIL_URL ?= https://github.com/mainto/sigil/releases/download/v0.4.0/sigil_0.4.0_Linux_armv7l.tgz
 STACK_URL ?= https://github.com/mainto/herokuish.git
@@ -47,7 +47,7 @@ packer:
 
 copyfiles:
 	cp dokku /usr/local/bin/dokku
-	cp /bin/bash ~/.basher/bash
+	test -d ~/.basher || mkdir -p ~/.basher && cp /bin/bash ~/.basher/bash
 	mkdir -p ${CORE_PLUGINS_PATH} ${PLUGINS_PATH}
 	rm -rf ${CORE_PLUGINS_PATH}/*
 	test -d ${CORE_PLUGINS_PATH}/enabled || PLUGIN_PATH=${CORE_PLUGINS_PATH} plugn init
@@ -110,7 +110,7 @@ docker:
 	install -d -m0750 -o syslog -g dokku /var/log/syslog-ng
 	egrep -i "^docker" /etc/group || groupadd docker
 	usermod -aG docker dokku
-	test -s /usr/bin/docker || apt-get install -qq -y lxc aufs-tools apparmor cgroup-lite docker 
+	test -s /usr/bin/docker || wget -qO /tmp/docker-hypriot_1.8.1-1_armhf.deb http://downloads.hypriot.com/docker-hypriot_1.8.1-1_armhf.deb && sudo dpkg -i /tmp/docker-hypriot_1.8.1-1_armhf.deb && rm -f /tmp/docker-hypriot_1.8.1-1_armhf.deb && sudo sh -c 'usermod -aG docker $SUDO_USER' && sudo systemctl enable docker.service
 
 #ifndef CI
 #	wget -nv -O - https://get.docker.com/ | sh
