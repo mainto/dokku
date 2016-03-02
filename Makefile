@@ -36,6 +36,9 @@ install: dependencies version copyfiles plugin-dependencies plugins
 
 release: deb-all package_cloud packer
 
+docker_check:
+	test -s /usr/bin/docker || (echo "docker is not exist"; exit 1)
+
 package_cloud:
 	package_cloud push dokku/dokku/ubuntu/trusty herokuish*.deb
 	package_cloud push dokku/dokku/ubuntu/trusty sshcommand*.deb
@@ -112,15 +115,6 @@ docker:
 	install -d -m0750 -o syslog -g dokku /var/log/syslog-ng
 	egrep -i "^docker" /etc/group || groupadd docker
 	usermod -aG docker dokku
-	test -s /usr/bin/docker || (wget -qO /tmp/docker-hypriot_1.8.1-1_armhf.deb http://downloads.hypriot.com/docker-hypriot_1.8.1-1_armhf.deb && sudo dpkg -i /tmp/docker-hypriot_1.8.1-1_armhf.deb && rm -f /tmp/docker-hypriot_1.8.1-1_armhf.deb && sudo sh -c 'usermod -aG docker $SUDO_USER' && sudo systemctl enable docker.service)
-
-#ifndef CI
-#	wget -nv -O - https://get.docker.com/ | sh
-#ifdef DOCKER_VERSION
-#	apt-get install -qq -y docker-engine=${DOCKER_VERSION} || (apt-cache madison docker-engine ; exit 1)
-#endif
-	sleep 2 # give docker a moment i guess
-#endif
 
 aufs:
 ifndef CI
@@ -129,20 +123,6 @@ endif
 
 stack:
 	docker images | grep mainto/armhf-herokuish || docker pull ${PREBUILT_STACK_URL}
-#ifeq ($(shell test -e /var/run/docker.sock && touch -c /var/run/docker.sock && echo $$?),0)
-#ifdef BUILD_STACK
-#	@echo "Start building herokuish from source"
-#	docker images | grep gliderlabs/herokuish || (git clone ${STACK_URL} /tmp/herokuish && cd /tmp/herokuish && IMAGE_NAME=gliderlabs/herokuish BUILD_TAG=latest VERSION=master make -e ${BUILD_STACK_TARGETS} && rm -rf /tmp/herokuish)
-#else
-#ifeq ($(shell echo ${PREBUILT_STACK_URL} | egrep -q 'http.*://|file://' && echo $$?),0)
-#	@echo "Start importing herokuish from ${PREBUILT_STACK_URL}"
-#	docker images | grep gliderlabs/herokuish || wget -nv -O - ${PREBUILT_STACK_URL} | gunzip -cd | docker import - gliderlabs/herokuish
-#else
-#	@echo "Start pulling herokuish from ${PREBUILT_STACK_URL}"
-#	docker images | grep gliderlabs/herokuish || docker pull ${PREBUILT_STACK_URL}
-#endif
-#endif
-#endif
 
 count:
 	@echo "Core lines:"
