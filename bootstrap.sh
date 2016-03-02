@@ -36,34 +36,17 @@ install-dokku() {
   if [[ -n $DOKKU_BRANCH ]]; then
     install-dokku-from-source "origin/$DOKKU_BRANCH"
   elif [[ -n $DOKKU_TAG ]]; then
-    local DOKKU_SEMVER="${DOKKU_TAG//v}"
-    major=$(echo "$DOKKU_SEMVER" | awk '{split($0,a,"."); print a[1]}')
-    minor=$(echo "$DOKKU_SEMVER" | awk '{split($0,a,"."); print a[2]}')
-    patch=$(echo "$DOKKU_SEMVER" | awk '{split($0,a,"."); print a[3]}')
-
-    # 0.3.13 was the first version with a debian package
-    if [[ "$major" -eq "0" ]] && [[ "$minor" -eq "3" ]] && [[ "$patch" -ge "13" ]]; then
-      install-dokku-from-package "$DOKKU_SEMVER"
-      echo "--> Running post-install dependency installation"
-      dokku plugins-install-dependencies
-    # 0.4.0 implemented a `plugin` plugin
-    elif [[ "$major" -eq "0" ]] && [[ "$minor" -ge "4" ]] && [[ "$patch" -ge "0" ]]; then
-      install-dokku-from-package "$DOKKU_SEMVER"
-      echo "--> Running post-install dependency installation"
-      sudo -E dokku plugin:install-dependencies --core
-    else
-      install-dokku-from-source "$DOKKU_TAG"
-    fi
+    install-dokku-from-source "tags/$DOKKU_TAG"
   else
-    install-dokku-from-package
-    echo "--> Running post-install dependency installation"
-    sudo -E dokku plugin:install-dependencies --core
+      echo "DOKKU_BRANCH or DOKKU_TAG need to be set"
+      exit 1
   fi
 }
 
 
 install-dokku-from-source() {
   local DOKKU_CHECKOUT="$1"
+  local DOKKU_TAG="$2"
   apt-get -qq -y install git make software-properties-common
   cd /root
   if [[ ! -d /root/dokku ]]; then
@@ -76,50 +59,9 @@ install-dokku-from-source() {
   make install
 }
 
-install-dokku-from-package() {
-  local DOKKU_CHECKOUT="$1"
-  local NO_INSTALL_RECOMMENDS=""
-
-  if [[ -n $DOKKU_DOCKERFILE ]]; then
-    NO_INSTALL_RECOMMENDS=" --no-install-recommends "
-  fi
-
-  echo "--> Initial apt-get update"
-  apt-get update -qq > /dev/null
-  apt-get -qq -y install apt-transport-https
-
-  echo "--> Installing docker"
-  if uname -r | grep -q linode; then
-    echo "--> NOTE: Using Linode? Docker might complain about missing AUFS support."
-    echo "    See http://dokku.viewdocs.io/dokku/getting-started/install/linode/"
-    echo "    Installation will continue in 10 seconds."
-    sleep 10
-  fi
-  wget -nv -O - https://get.docker.com/ | sh
-
-  echo "--> Installing dokku"
-  wget -nv -O - https://packagecloud.io/gpg.key | apt-key add -
-  echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ trusty main" | tee /etc/apt/sources.list.d/dokku.list
-  apt-get update -qq > /dev/null
-
-  [[ -n $DOKKU_VHOST_ENABLE ]]  && echo "dokku dokku/vhost_enable boolean $VHOST_ENABLE"         | sudo debconf-set-selections
-  [[ -n $DOKKU_WEB_CONFIG ]]    && echo "dokku dokku/web_config boolean $DOKKU_WEB_CONFIG"       | sudo debconf-set-selections
-  [[ -n $DOKKU_HOSTNAME ]]      && echo "dokku dokku/hostname string $DOKKU_HOSTNAME"            | sudo debconf-set-selections
-  [[ -n $DOKKU_SKIP_KEY_FILE ]] && echo "dokku dokku/skip_key_file boolean $DOKKU_SKIP_KEY_FILE" | sudo debconf-set-selections
-  [[ -n $DOKKU_KEY_FILE ]]      && echo "dokku dokku/key_file string $DOKKU_KEY_FILE"            | sudo debconf-set-selections
-
-  if [[ -n $DOKKU_CHECKOUT ]]; then
-    # shellcheck disable=SC2086
-    apt-get -qq -y $NO_INSTALL_RECOMMENDS install "dokku=$DOKKU_CHECKOUT"
-  else
-    # shellcheck disable=SC2086
-    apt-get -qq -y $NO_INSTALL_RECOMMENDS install dokku
-  fi
-}
-
 main() {
   export DEBIAN_FRONTEND=noninteractive
-  export DOKKU_REPO=${DOKKU_REPO:-"https://github.com/dokku/dokku.git"}
+  export DOKKU_REPO=${DOKKU_REPO:-"https://github.com/mainto/dokku.git"}
 
   ensure-environment
   install-requirements
