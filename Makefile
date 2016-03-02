@@ -77,6 +77,8 @@ plugin-dependencies: plugn
 	sudo -E dokku plugin:install-dependencies --core
 
 plugins: plugn docker
+	test -d /home/dokku/.basher || mkdir /home/dokku/.basher
+	test -s /home/dokku/.basher/bash || cp /bin/bash /home/dokku/.basher/bash
 	sudo -E dokku plugin:install --core
 
 dependencies: apt-update sshcommand plugn docker help2man man-db sigil
