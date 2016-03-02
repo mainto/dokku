@@ -43,7 +43,7 @@ install-dokku() {
 
 install-dokku-from-source() {
   local DOKKU_CHECKOUT="$1"
-  local DOKKU_TAG="$2"
+  
   apt-get -qq -y install git make software-properties-common
   cd /root
   if [[ ! -d /root/dokku ]]; then

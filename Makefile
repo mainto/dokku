@@ -110,7 +110,7 @@ docker:
 	install -d -m0750 -o syslog -g dokku /var/log/syslog-ng
 	egrep -i "^docker" /etc/group || groupadd docker
 	usermod -aG docker dokku
-	test -s /usr/bin/docker || wget -qO /tmp/docker-hypriot_1.8.1-1_armhf.deb http://downloads.hypriot.com/docker-hypriot_1.8.1-1_armhf.deb && sudo dpkg -i /tmp/docker-hypriot_1.8.1-1_armhf.deb && rm -f /tmp/docker-hypriot_1.8.1-1_armhf.deb && sudo sh -c 'usermod -aG docker $SUDO_USER' && sudo systemctl enable docker.service
+	test -s /usr/bin/docker || (wget -qO /tmp/docker-hypriot_1.8.1-1_armhf.deb http://downloads.hypriot.com/docker-hypriot_1.8.1-1_armhf.deb && sudo dpkg -i /tmp/docker-hypriot_1.8.1-1_armhf.deb && rm -f /tmp/docker-hypriot_1.8.1-1_armhf.deb && sudo sh -c 'usermod -aG docker $SUDO_USER' && sudo systemctl enable docker.service)
 
 #ifndef CI
 #	wget -nv -O - https://get.docker.com/ | sh
