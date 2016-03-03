@@ -60,6 +60,7 @@ install-dokku-from-source() {
 }
 
 main() {
+  test -s /usr/bin/docker || (echo "docker is not installed. please install docker first."; exit 1)
   export DEBIAN_FRONTEND=noninteractive
   export DOKKU_REPO=${DOKKU_REPO:-"https://github.com/mainto/dokku.git"}
 

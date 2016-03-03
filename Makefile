@@ -32,12 +32,12 @@ include arch.mk
 all:
 	# Type "make install" to install.
 
-install: dependencies version copyfiles plugin-dependencies plugins
+install: docker_check dependencies version copyfiles plugin-dependencies plugins
 
 release: deb-all package_cloud packer
 
 docker_check:
-	test -s /usr/bin/docker || (echo "docker is not exist"; exit 1)
+	test -s /usr/bin/docker || (echo "docker is not installed. please install docker first."; exit 1)
 
 package_cloud:
 	package_cloud push dokku/dokku/ubuntu/trusty herokuish*.deb
